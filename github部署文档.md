@@ -400,7 +400,8 @@ Todos updated: 4 items
 
 ```powershell
 git brunch ---查看当前分支
-git remote -v   ---查看远程push路径
+
+   ---查看远程push路径
 cd "e:\trae\QR code"
 git init
 git add .
@@ -410,8 +411,19 @@ git config user.name "张三"
 git config user.email "zhangsan@qq.com"
 git branch -M main
 git remote add origin https://github.com/<你的用户名>/<仓库名>.git
-git push -u origin main
+git push -u origin main --set-upstream
 ```
+nslookup github.com  ---查看是否被代理截获
+nslookup github.com  ---查看是否被代理截获，确认是否被代理
+
+ipconfig /flushdns --flushdns   ---清除DNS缓存
+
+Test-NetConnection github.com -Port 443   ---查看是否能连接到 GitHub
+
+ssh -T git@github.com   ---查看是否能连接到 GitHub 服务器
+
+git config --global http.proxy http://127.0.0.1:63739  ---设置代理
+git config --global https.proxy http://127.0.0.1:63728  ---设置代理
 
 3. **启用 Pages**：仓库 Settings → Pages → Source 选择 **GitHub Actions**。
 4. **可选：保护 main 分支**：Settings → Branches → Add rule → 勾选 "Require a pull request before merging"。

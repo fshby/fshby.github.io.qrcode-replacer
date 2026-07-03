@@ -1,0 +1,67 @@
+name: Deploy to Tencent Cloud COS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Install coscli
+        run: |
+          wget https://github.com/tencentyun/coscli/releases/download/v1.2.22/coscli-linux -O coscli
+          chmod +x coscli
+          sudo mv coscli /usr/local/bin/
+
+      - name: Configure coscli
+        run: |
+          coscli config set -a default -b ${{ secrets.COS_BUCKET }} -r ${{ secrets.COS_REGION }}
+          coscli config set -a default -sk ${{ secrets.COS_SECRET_KEY }} -ak ${{ secrets.COS_SECRET_ID }}
+
+      - name: Upload to COS
+        run: |
+          coscli sync ./dist/ cos://${{ secrets.COS_BUCKET }}/ \
+            --delete \
+            --include "**/*"
+
+      - name: Install tencentcloud-cli
+        run: |
+          pip install tencentcloud-sdk-python
+
+      - name: Purge CDN cache
+        env:
+          TENCENTCLOUD_SECRET_ID: ${{ secrets.COS_SECRET_ID }}
+          TENCENTCLOUD_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}
+        run: |
+          python -c "
+          from tencentcloud.common import credential
+          from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+          from tencentcloud.cdn.v20180606 import cdn_client, models
+          
+          try:
+              cred = credential.Credential('${{ secrets.COS_SECRET_ID }}', '${{ secrets.COS_SECRET_KEY }}')
+              client = cdn_client.CdnClient(cred, '${{ secrets.COS_REGION }}')
+              
+              req = models.PurgeUrlsCacheRequest()
+              req.Urls = ['https://${{ secrets.CDN_DOMAIN }}/index.html']
+              
+              resp = client.PurgeUrlsCache(req)
+              print('CDN缓存刷新成功:', resp.to_json_string())
+          except TencentCloudSDKException as err:
+              print('CDN缓存刷新失败:', err)
+          "

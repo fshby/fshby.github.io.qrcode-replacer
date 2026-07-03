@@ -1,0 +1,33 @@
+{
+  "name": "qrcode-replacer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx,vue --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "fabric": "^5.3.0",
+    "jsqr": "^1.4.0",
+    "ml-matrix": "^6.11.0",
+    "qrcode": "^1.5.4",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@types/fabric": "^5.3.11",
+    "@types/node": "^20.11.30",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.23.0",
+    "postcss": "^8.4.37",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.4.3",
+    "vite": "^5.2.8",
+    "vue-tsc": "^2.0.11"
+  }
+}

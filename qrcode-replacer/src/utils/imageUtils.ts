@@ -46,7 +46,7 @@ export function getImageDataFromImage(image: HTMLImageElement): ImageDataWrapper
   const canvas = document.createElement('canvas')
   canvas.width = image.width
   canvas.height = image.height
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
   ctx.drawImage(image, 0, 0)
   const imageData = ctx.getImageData(0, 0, image.width, image.height)
   
@@ -69,7 +69,7 @@ export async function resizeImage(image: HTMLImageElement, maxSize: number): Pro
   const canvas = document.createElement('canvas')
   canvas.width = width
   canvas.height = height
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!
   ctx.imageSmoothingEnabled = true
   ctx.imageSmoothingQuality = 'high'
   ctx.drawImage(image, 0, 0, width, height)

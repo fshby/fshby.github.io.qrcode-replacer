@@ -53,7 +53,7 @@ watch(() => props.templateImage, async (newImage) => {
     offscreenCanvas = document.createElement('canvas')
     offscreenCanvas.width = img.width
     offscreenCanvas.height = img.height
-    const offscreenCtx = offscreenCanvas.getContext('2d')!
+    const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true })!
     offscreenCtx.drawImage(img, 0, 0)
     
     templateFabricImage = new fabric.Image(img)
@@ -103,7 +103,7 @@ watch(() => props.qrImage, async (newImage) => {
 function drawCornersOnOffscreen(corners: QRCodeCorners, color: string = 'red') {
   if (!offscreenCanvas) return
   
-  const ctx = offscreenCanvas.getContext('2d')!
+  const ctx = offscreenCanvas.getContext('2d', { willReadFrequently: true })!
   ctx.strokeStyle = color
   ctx.lineWidth = 4
   ctx.fillStyle = color
@@ -327,7 +327,7 @@ async function performComposite() {
 
     console.log('步骤0: 重新绘制原始模板图片（清除红线和角标）')
     const originalTemplate = await loadImage(props.templateImage.url)
-    const offscreenCtx = offscreenCanvas.getContext('2d')!
+    const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true })!
     offscreenCtx.drawImage(originalTemplate, 0, 0)
     clearQrRegion(offscreenCanvas, dstCorners, '#ffffff')
 
@@ -443,7 +443,7 @@ async function reDetect() {
     }
     offscreenCanvas.width = img.width
     offscreenCanvas.height = img.height
-    const offscreenCtx = offscreenCanvas.getContext('2d')!
+    const offscreenCtx = offscreenCanvas.getContext('2d', { willReadFrequently: true })!
     offscreenCtx.drawImage(img, 0, 0)
     
     removeAnchors()

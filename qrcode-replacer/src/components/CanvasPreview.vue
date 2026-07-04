@@ -6,7 +6,7 @@ import { useQRDetect } from '@/composables/useQRDetect'
 import { usePerspectiveTransform } from '@/composables/usePerspectiveTransform'
 import { useAppStore } from '@/stores/useAppStore'
 import { loadImage } from '@/utils/imageUtils'
-import { clearQrRegion } from '@/utils/perspectiveUtils'
+import { clearQrRegion, normalizeCorners, checkQuadHealth } from '@/utils/perspectiveUtils'
 import { generateQRCode } from '@/utils/qrGenerator'
 
 const props = defineProps<{
@@ -307,38 +307,40 @@ function updateSelectionArea() {
 
 async function performComposite() {
   if (!canvas.value || !offscreenCanvas || !props.templateImage) return
-  
+
   if (!state.qrContent && !props.qrImage) return
-  
+
   setIsCompositing(true)
-  
+
   try {
-    const dstCorners: Point[] = anchorPoints.map(anchor => {
-      return convertToOriginalCoords({ x: anchor.left!, y: anchor.top! })
-    })
-    
+    // ====== 关键修复：不管 anchor 顺序如何，先规范化为标准 TL/TR/BR/BL
+    const rawCorners = anchorPoints.map((anchor) => convertToOriginalCoords({ x: anchor.left!, y: anchor.top! }))
+    const dstCorners = normalizeCorners(rawCorners)
+    const health = checkQuadHealth(dstCorners)
+
     console.log('=== 开始合成 ===')
     console.log('锚点数量:', anchorPoints.length)
-    console.log('锚点显示坐标:', anchorPoints.map(a => ({ x: a.left, y: a.top })))
-    console.log('目标原始坐标:', dstCorners)
+    console.log('原始 anchor 坐标:', rawCorners.map((p, i) => `#${i}=(${Math.round(p.x)},${Math.round(p.y)})`).join('  '))
+    console.log('规范化后坐标:', dstCorners.map((p, i) => `[${['TL','TR','BR','BL'][i]}]=(${Math.round(p.x)},${Math.round(p.y)})`).join('  '))
+    console.log('形状健康度:', health.score.toFixed(2), health.healthy ? '✅' : `⚠️ ${health.reason}`)
     console.log('离屏Canvas尺寸:', { width: offscreenCanvas.width, height: offscreenCanvas.height })
-    
+
     console.log('步骤0: 重新绘制原始模板图片（清除红线和角标）')
     const originalTemplate = await loadImage(props.templateImage.url)
     const offscreenCtx = offscreenCanvas.getContext('2d')!
     offscreenCtx.drawImage(originalTemplate, 0, 0)
     clearQrRegion(offscreenCanvas, dstCorners, '#ffffff')
-    
+
     let sourceQRImg: HTMLImageElement | null = null
-    
+
     if (state.qrContent) {
       console.log('步骤1: 使用文本内容生成二维码')
       const qrSize = Math.max(256, Math.round(Math.sqrt(
-        Math.pow(dstCorners[1].x - dstCorners[0].x, 2) + 
+        Math.pow(dstCorners[1].x - dstCorners[0].x, 2) +
         Math.pow(dstCorners[1].y - dstCorners[0].y, 2)
       )))
       console.log(`生成二维码尺寸: ${qrSize}x${qrSize}`)
-      
+
       const generatedQR = await generateQRCode(state.qrContent, qrSize)
       console.log('生成的二维码图片尺寸:', generatedQR.width, 'x', generatedQR.height)
       sourceQRImg = generatedQR
@@ -346,21 +348,21 @@ async function performComposite() {
       console.log('步骤1: 加载上传的二维码图片')
       const qrImg = await loadImage(props.qrImage.url)
       console.log('上传的二维码图片尺寸:', qrImg.width, 'x', qrImg.height)
-      
+
       console.log('步骤2: 尝试识别二维码内容')
       const tempCanvas = document.createElement('canvas')
       tempCanvas.width = qrImg.width
       tempCanvas.height = qrImg.height
       const tempCtx = tempCanvas.getContext('2d')!
       tempCtx.drawImage(qrImg, 0, 0)
-      
+
       const { detect } = useQRDetect()
       const detectResult = await detect(tempCanvas)
-      
+
       if (detectResult.success && detectResult.data) {
         console.log(`识别成功，重新生成标准二维码: ${detectResult.data.substring(0, 50)}${detectResult.data.length > 50 ? '...' : ''}`)
         const qrSize = Math.max(256, Math.round(Math.sqrt(
-          Math.pow(dstCorners[1].x - dstCorners[0].x, 2) + 
+          Math.pow(dstCorners[1].x - dstCorners[0].x, 2) +
           Math.pow(dstCorners[1].y - dstCorners[0].y, 2)
         )))
         const generatedQR = await generateQRCode(detectResult.data, qrSize)
@@ -370,11 +372,11 @@ async function performComposite() {
         sourceQRImg = qrImg
       }
     }
-    
+
     if (!sourceQRImg) {
       throw new Error('请提供二维码内容或上传二维码图片')
     }
-    
+
     const generatedImgResult: ImageUploadResult = {
       id: props.qrImage?.id || `${Date.now()}-generated`,
       file: props.qrImage?.file || new File([], 'generated-qr.png', { type: 'image/png' }),
@@ -383,32 +385,25 @@ async function performComposite() {
       height: sourceQRImg.height,
       type: 'qr'
     }
-    
+
     console.log('步骤6: 执行透视变换合成')
     await transform(offscreenCanvas, generatedImgResult, dstCorners)
-    
+
     console.log('步骤7: 更新Fabric画布')
     const compositedDataUrl = offscreenCanvas.toDataURL('image/png')
     console.log('合成后离屏Canvas大小:', compositedDataUrl.length, 'bytes')
-    console.log('合成后离屏Canvas:', compositedDataUrl.substring(0, 50) + '...')
-    
-    const testCtx = offscreenCanvas.getContext('2d')
-    const centerX = Math.floor((dstCorners[0].x + dstCorners[1].x + dstCorners[2].x + dstCorners[3].x) / 4)
-    const centerY = Math.floor((dstCorners[0].y + dstCorners[1].y + dstCorners[2].y + dstCorners[3].y) / 4)
-    const centerPixel = testCtx!.getImageData(centerX, centerY, 1, 1).data
-    console.log(`目标区域中心像素(${centerX},${centerY}): R=${centerPixel[0]}, G=${centerPixel[1]}, B=${centerPixel[2]}`)
-    
+
     const compositedImage = new fabric.Image(offscreenCanvas)
     compositedImage.scale(templateScale)
     compositedImage.set({
       left: templateOffsetX,
       top: templateOffsetY
     })
-    
+
     canvas.value.remove(templateFabricImage!)
     templateFabricImage = compositedImage
     canvas.value.add(templateFabricImage)
-    
+
     canvas.value.renderAll()
     console.log('=== 合成完成 ===')
     emit('composite-complete')

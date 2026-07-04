@@ -5,8 +5,8 @@
       "name": "科技海报",
       "description": "适合技术分享、社群推广的科技风格海报",
       "category": "poster",
-      "imageUrl": "/templates/poster-1.webp",
-      "thumbnailUrl": "/templates/poster-1.webp",
+      "imageUrl": "templates/poster-1.webp",
+      "thumbnailUrl": "templates/poster-1.webp",
       "width": 992,
       "height": 895
     },
@@ -15,8 +15,8 @@
       "name": "商务邀请函",
       "description": "简洁大气的商务活动邀请函模板",
       "category": "invitation",
-      "imageUrl": "/templates/invitation-1.webp",
-      "thumbnailUrl": "/templates/invitation-1-thumb.webp",
+      "imageUrl": "templates/invitation-1.webp",
+      "thumbnailUrl": "templates/invitation-1-thumb.webp",
       "width": 800,
       "height": 1000
     },
@@ -25,8 +25,8 @@
       "name": "二维码名片",
       "description": "专业的商务名片模板，包含二维码区域",
       "category": "business-card",
-      "imageUrl": "/templates/business-card-1.webp",
-      "thumbnailUrl": "/templates/business-card-1.webp",
+      "imageUrl": "templates/business-card-1.webp",
+      "thumbnailUrl": "templates/business-card-1.webp",
       "width": 1000,
       "height": 600
     },
@@ -35,8 +35,8 @@
       "name": "促销海报",
       "description": "适合电商促销、活动宣传的海报模板",
       "category": "promotion",
-      "imageUrl": "/templates/promotion-1.webp",
-      "thumbnailUrl": "/templates/promotion-1-thumb.webp",
+      "imageUrl": "templates/promotion-1.webp",
+      "thumbnailUrl": "templates/promotion-1-thumb.webp",
       "width": 750,
       "height": 1334
     },
@@ -45,8 +45,8 @@
       "name": "社交分享",
       "description": "适合微信朋友圈、社交媒体分享的模板",
       "category": "social",
-      "imageUrl": "/templates/social-1.webp",
-      "thumbnailUrl": "/templates/social-1-thumb.webp",
+      "imageUrl": "templates/social-1.webp",
+      "thumbnailUrl": "templates/social-1-thumb.webp",
       "width": 1080,
       "height": 1080
     }

@@ -31,7 +31,7 @@ export interface QRDetectResult {
   corners?: QRCodeCorners
   data?: string
   error?: string
-  method?: 'jsqr' | 'finder-pattern'
+  method?: 'jsqr' | 'finder-pattern' | 'image-feature'
 }
 
 export interface AnchorPosition {

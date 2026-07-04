@@ -33,15 +33,30 @@ const customPlaceholder = ref(true)
 async function loadTemplates() {
   loadingTemplates.value = true
   try {
-    const response = await fetch('/templates/templates.json')
+    // 以 Vite 的 base 为前缀，兼容站点根部署 / GitHub Pages 子路径部署
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+    const response = await fetch(`${base}/templates/templates.json`)
     const data = await response.json()
-    templates.value = data.templates || []
+    templates.value = (data.templates || []).map((t: TemplateItem) => ({
+      ...t,
+      imageUrl: resolveWithBase(t.imageUrl, base),
+      thumbnailUrl: resolveWithBase(t.thumbnailUrl, base)
+    }))
   } catch (err) {
     console.error('加载模板列表失败:', err)
     templates.value = []
   } finally {
     loadingTemplates.value = false
   }
+}
+
+// 如果 templates.json 给的是绝对路径（/templates/xxx.webp），
+// 保持不变；相对路径（templates/xxx.webp）或绝对 URL 则按规则添加 base 前缀。
+function resolveWithBase(url: string, base: string): string {
+  if (!url) return url
+  if (/^https?:\/\//i.test(url)) return url
+  if (url.startsWith('/')) return url
+  return `${base}/${url}`
 }
 
 async function selectTemplate(template: TemplateItem) {

@@ -425,6 +425,19 @@ ssh -T git@github.com   ---查看是否能连接到 GitHub 服务器
 git config --global http.proxy http://127.0.0.1:63739  ---设置代理
 git config --global https.proxy http://127.0.0.1:63728  ---设置代理
 
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+
+
+# 先删除原来的 HTTPS 远程
+git remote remove origin
+
+# 添加 SSH 远程地址
+git remote add origin git@github.com:fshby/fshby.github.io.qrcode-replacer.git
+
+# 再次推送
+git push -u origin main
+
 3. **启用 Pages**：仓库 Settings → Pages → Source 选择 **GitHub Actions**。
 4. **可选：保护 main 分支**：Settings → Branches → Add rule → 勾选 "Require a pull request before merging"。
 5. **邀请协作者**：Settings → Collaborators → Add people。

@@ -2,23 +2,25 @@ import { ref } from 'vue';
 import jsQR from 'jsqr';
 import type { QRDetectResult, QRCodeCorners, Point } from '@/types';
 import { detectFinderPatterns } from '@/utils/finderPatternDetector';
+import { detectQRCornersByImageFeatures } from '@/utils/featureBasedDetector';
+import { normalizeCorners } from '@/utils/perspectiveUtils';
 
 export function useQRDetect() {
   const isDetecting = ref(false);
   const lastResult = ref<QRDetectResult | null>(null);
 
+  /**
+   * 统一调用 perspectiveUtils.normalizeCorners 来排序：
+   * 去重 → 质心极角排序 → 叉积判定顺时针 → y 最小作为 TL
+   * 输出顺序固定：TL → TR → BR → BL
+   */
   function sortCorners(corners: Point[]): QRCodeCorners {
-    const sorted = [...corners].sort((a, b) => {
-      if (Math.abs(a.y - b.y) < 10) return a.x - b.x;
-      return a.y - b.y;
-    });
-    const topTwo = sorted.slice(0, 2).sort((a, b) => a.x - b.x);
-    const bottomTwo = sorted.slice(2, 4).sort((a, b) => a.x - b.x);
+    const ordered = normalizeCorners(corners);
     return {
-      topLeft: topTwo[0],
-      topRight: topTwo[1],
-      bottomLeft: bottomTwo[0],
-      bottomRight: bottomTwo[1]
+      topLeft: ordered[0],
+      topRight: ordered[1],
+      bottomRight: ordered[2],
+      bottomLeft: ordered[3]
     };
   }
 
@@ -59,14 +61,29 @@ export function useQRDetect() {
         return result;
       }
 
-      console.log('jsQR detection failed, trying finder pattern detection...');
-      const fallbackCorners = detectFinderPatterns(canvas);
+      console.log('jsQR detection failed, trying image feature based detection...');
+      const fallbackCorners = detectQRCornersByImageFeatures(canvas);
 
       if (fallbackCorners) {
-        console.log('Finder pattern detection succeeded:', fallbackCorners);
+        console.log('Image feature detection succeeded:', fallbackCorners);
         const result: QRDetectResult = {
           success: true,
           corners: fallbackCorners,
+          data: '',
+          method: 'image-feature'
+        };
+        lastResult.value = result;
+        return result;
+      }
+
+      // 最后兜底：旧版 finder pattern 检测
+      console.log('Image feature detection failed, trying old finder pattern detection...');
+      const lastFallback = detectFinderPatterns(canvas);
+      if (lastFallback) {
+        console.log('Finder pattern detection succeeded:', lastFallback);
+        const result: QRDetectResult = {
+          success: true,
+          corners: lastFallback,
           data: '',
           method: 'finder-pattern'
         };

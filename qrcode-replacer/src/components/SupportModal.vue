@@ -12,6 +12,8 @@ const emit = defineEmits<{
 const activeTab = ref<'donate' | 'contact'>('donate')
 const copied = ref(false)
 
+const baseUrl = import.meta.env.BASE_URL || '/'
+
 function handleClose() {
   emit('close')
 }
@@ -98,9 +100,7 @@ watch(() => props.visible, (newVal) => {
                 </div>
                 <div class="aspect-square max-w-[220px] mx-auto bg-white rounded-lg p-2 border border-green-100">
                   <img
-
-                   
-                    src="../../public/donate/wechat-pay.webp"
+                    :src="`${baseUrl}donate/wechat-pay.webp`"
                     alt="微信收款码"
                     class="w-full h-full object-contain"
                   />
@@ -119,7 +119,7 @@ watch(() => props.visible, (newVal) => {
                 </div>
                 <div class="aspect-square max-w-[220px] mx-auto bg-white rounded-lg p-2 border border-blue-100">
                   <img
-                    src="../../public/donate/alipay.webp"
+                    :src="`${baseUrl}donate/alipay.webp`"
                     alt="支付宝收款码"
                     class="w-full h-full object-contain"
                   />
@@ -142,7 +142,7 @@ watch(() => props.visible, (newVal) => {
                 </div>
                 <div class="aspect-square max-w-[220px] mx-auto bg-white rounded-lg p-2 border border-blue-100">
                   <img
-                    src="../../public/donate/contact-qr.webp"
+                    :src="`${baseUrl}donate/contact-qr.webp`"
                     alt="微信联系二维码"
                     class="w-full h-full object-contain"
                   />

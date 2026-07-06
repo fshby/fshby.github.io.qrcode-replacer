@@ -100,7 +100,7 @@ watch(() => props.visible, (newVal) => {
                   <img
 
                    
-                    src="../../public/donate/wechat-pay.png"
+                    src="../../public/donate/wechat-pay.webp"
                     alt="微信收款码"
                     class="w-full h-full object-contain"
                   />
@@ -119,7 +119,7 @@ watch(() => props.visible, (newVal) => {
                 </div>
                 <div class="aspect-square max-w-[220px] mx-auto bg-white rounded-lg p-2 border border-blue-100">
                   <img
-                    src="../../public/donate/alipay.png"
+                    src="../../public/donate/alipay.webp"
                     alt="支付宝收款码"
                     class="w-full h-full object-contain"
                   />
@@ -142,7 +142,7 @@ watch(() => props.visible, (newVal) => {
                 </div>
                 <div class="aspect-square max-w-[220px] mx-auto bg-white rounded-lg p-2 border border-blue-100">
                   <img
-                    src="../../public/donate/contact-qr.png"
+                    src="../../public/donate/contact-qr.webp"
                     alt="微信联系二维码"
                     class="w-full h-full object-contain"
                   />
